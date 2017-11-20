@@ -113,7 +113,7 @@ def upload_project(sha, purl, scan_parameters={}):
         url = url_tmpl.format("projects/{}".format(doc_id))
         payload = {
                    "sha": sha,
-                   "url": url,
+                   "url": purl,
                    "scan_parameters": scan_parameters
                   }
         response = requests.request("PATCH", url, data=json.dumps(payload),
@@ -144,8 +144,7 @@ def upload_repo(username, repository_name):
 
     sha = get_sha(username, repository_name)
 
-    project_info = upload_project(sha,
-                                  purl=repo)
+    project_info = upload_project(sha, purl=repo)
     upload_subjects(df, df_node, project_info["_id"])
     print(project_info)
 
