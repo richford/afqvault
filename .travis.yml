@@ -1,0 +1,16 @@
+language: python
+sudo: false
+
+python:
+- '3.6'
+
+install:
+- travis_retry pip install -r requirements.txt
+
+script:
+- python travis.py
+
+branches:
+ only:
+   - master
+#after_success:
