@@ -1,16 +1,14 @@
 language: python
 sudo: false
-
 python:
 - '3.6'
-
 install:
 - travis_retry pip install -r requirements.txt
-
 script:
 - python travis.py
-
 branches:
- only:
-   - master
-#after_success:
+  only:
+  - master
+env:
+  matrix:
+    secure: lLEJd8Ahx5W3yYPcsHbA/yYKb40lxNXpQEc21EBHsGyff/lAuf+9Dz/2OAV69kHEoKlIpjbfkLKVfRecDtE7XQnVzlJgph9W95ifhqiaje6p5Pt2fm3/XUWgPglhbTB6p2kKxpj9e/Fs6YyWQEL1WUVoGvzCDDErs7B/NH0KzxFH67u8PTze65P//W5HYCJenfe3o2Wp+U+31ao+upuDe8rDPTV6cod+K2brLCFISXIY/FiPK4QhquIt7QwjkprcUPc0hasraCcI4iSri9Rgrv3HG3Mj8VhgRh+TOh6rwfsbQuM3JWaTtw4FQEFLRNOM9pczGMqKr5/g2XHz4xbrUG06pumBRnyb0WCT7vMdJMRaycSCUd9GDbdbLCPdtYMit3OSyPAOHpEmWGV8Ao051VcTHDEY8uRI06hVoj+mS8IPmyFD8iRL3UiNwPtDbEgpeKL6kUPRDarEDr+4D0uWEqs/isvKbsjv7Y6NfUz4+7Onc5x+EHfR5YyYHaf3BaI5PGo21p7IY0+0i83vfrfEaVGUpGF2jK2k/dBkeAQveTnL/uvfN2GOC4RgQQLHc5Gze/KFalrTEqJUi0JkI9GlyM5yGkhSBgb5viLYi7Op+66eiFplHNNvfV5jZ11D3OQGay4BSbMuUC9bBiADYtGH3YvAMurODtaRAD6RzkD90qA=
