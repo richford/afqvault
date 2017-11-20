@@ -17,7 +17,7 @@ headers = {
     }
 
 
-def upload_subjects(df, df_node, project_id, sessionID="0"):
+def upload_subjects(df, df_node, project_id, sessionID="0", do_patch=False):
     subj_data = df.to_dict("records")
     data = []
     for sub in subj_data:
@@ -51,16 +51,19 @@ def upload_subjects(df, df_node, project_id, sessionID="0"):
             output = json.loads(response.text)
             data.append(output)
         else:
-            etag = res[0]["_etag"]
-            doc_id = res[0]["_id"]
-            patch_header = deepcopy(headers)
-            patch_header["if-match"] = etag
-            url = url_tmpl.format("subjects/{}".format(doc_id))
-
-            response = requests.request("PATCH", url, data=json.dumps(payload),
-                                        headers=patch_header)
-            assert response.ok, "ERROR\n\n"+response.text
-            data.append(json.loads(response.text))
+            if do_patch:
+                etag = res[0]["_etag"]
+                doc_id = res[0]["_id"]
+                patch_header = deepcopy(headers)
+                patch_header["if-match"] = etag
+                url = url_tmpl.format("subjects/{}".format(doc_id))
+                response = requests.request("PATCH", url,
+                                            data=json.dumps(payload),
+                                            headers=patch_header)
+                assert response.ok, "ERROR\n\n"+response.text
+                data.append(json.loads(response.text))
+            else:
+                print("Entry already exists. Nothing to do.")
 
     return data
 
@@ -80,7 +83,7 @@ def format_nodes(df_node):
     return data
 
 
-def upload_project(sha, purl, scan_parameters={}):
+def upload_project(sha, purl, scan_parameters={}, do_patch=False):
     # see if the project is already there. If not, POST it
     query = url_tmpl.format("projects?where=sha=='{}'".format(sha))
     response = requests.request("GET", query,
@@ -105,21 +108,26 @@ def upload_project(sha, purl, scan_parameters={}):
         return res
 
     else:
-        print("Found existing project. PATCHING data")
-        etag = res[0]["_etag"]
-        doc_id = res[0]["_id"]
-        patch_header = deepcopy(headers)
-        patch_header["if-match"] = etag
-        url = url_tmpl.format("projects/{}".format(doc_id))
-        payload = {
-                   "sha": sha,
-                   "url": purl,
-                   "scan_parameters": scan_parameters
-                  }
-        response = requests.request("PATCH", url, data=json.dumps(payload),
-                                    headers=patch_header)
-        assert response.ok, "ERROR\n\n"+response.text
-        return json.loads(response.text)
+        if do_patch:
+            print("Found existing project. PATCHING data")
+            etag = res[0]["_etag"]
+            doc_id = res[0]["_id"]
+            patch_header = deepcopy(headers)
+            patch_header["if-match"] = etag
+            url = url_tmpl.format("projects/{}".format(doc_id))
+            payload = {
+                       "sha": sha,
+                       "url": purl,
+                       "scan_parameters": scan_parameters
+                      }
+            response = requests.request("PATCH", url, data=json.dumps(payload),
+                                        headers=patch_header)
+            assert response.ok, "ERROR\n\n"+response.text
+            return json.loads(response.text)
+        else:
+            print("Entry already exists. Nothing to do.")
+            return 0
+
 
 def get_sha(username, repository_name):
     # https://api.github.com/repos/yeatmanlab/AFQ-Browser/commits/master
@@ -131,6 +139,7 @@ def get_sha(username, repository_name):
     assert 'sha' in response_data.keys(), response_data
     sha = response_data['sha']
     return sha
+
 
 def upload_repo(username, repository_name):
     repo = "https://{username}.github.io/{repo_name}"\
@@ -145,8 +154,10 @@ def upload_repo(username, repository_name):
     sha = get_sha(username, repository_name)
 
     project_info = upload_project(sha, purl=repo)
-    upload_subjects(df, df_node, project_info["_id"])
+    if project_info:
+        upload_subjects(df, df_node, project_info["_id"])
     print(project_info)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Put AFQ data into our vault')
