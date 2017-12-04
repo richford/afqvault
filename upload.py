@@ -9,6 +9,7 @@ import argparse
 url_tmpl = "http://ec2-54-218-51-130.us-west-2.compute.amazonaws.com/api/v1/{}"
 assert 'DB_SECRET' in os.environ, "Define the DB_SECRET in env"
 secret_password = os.environ['DB_SECRET']
+gh_token = os.environ['GH_TOKEN']
 
 headers = {
     'content-type': "application/json",
@@ -134,7 +135,13 @@ def get_sha(username, repository_name):
     req = "https://api.github.com/repos/{owner}/{repo}/commits/gh-pages"\
         .format(owner=username, repo=repository_name)
 
-    response = requests.get(req)
+    gh_auth = {
+        'content-type': 'application/json',
+        'authorization': "Basic {}".format(gh_token),
+        'cache-control': "no-cache",
+        }
+
+    response = requests.get(req, headers=gh_auth)
     response_data = json.loads(response.text)
     assert 'sha' in response_data.keys(), response_data
     sha = response_data['sha']
